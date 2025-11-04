@@ -1,0 +1,5 @@
+docker compose down -v
+docker compose down --rmi all -v
+docker compose up --build
+docker compose up --build -d
+docker system prune -a --volumes

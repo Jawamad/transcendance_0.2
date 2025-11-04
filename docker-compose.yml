@@ -1,0 +1,119 @@
+services:
+  waf:
+    networks:
+      - app_network
+    image: owasp/modsecurity-crs:nginx-alpine
+    container_name: waf
+    ports:
+      - "80:80"
+    restart: always
+    volumes:
+    # fichier reverse-proxy Nginx
+    - ./reverse-proxy/custom.conf:/etc/nginx/conf.d/custom.conf
+
+     # Dossier frontend buildé
+    - ./frontend/dist:/usr/share/nginx/html
+
+    #fichier de config ModSecurity
+    - ./reverse-proxy/modsecurity.conf:/etc/nginx/modsecurity.conf
+
+    # certificats SSL
+    # - ./infra/reverse-proxy/certs:/etc/ssl/certs
+    depends_on:
+    - api-gateway
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    networks:
+      - app_network
+    environment:
+      - NODE_ENV=production
+      - AUTH_SERVICE_URL=http://authservice:4000
+      - FRONTEND_URL=http://frontend:80
+    depends_on:
+      - authservice
+    restart: always
+
+  dbwriter:
+    build:
+      context: ./dbwriter
+      dockerfile: Dockerfile
+    container_name: dbwriter
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=file:/app/data/database.sqlite
+    volumes:
+      - sqlite_data:/app/data
+    networks:
+      - app_network
+    restart: always
+
+  authservice:
+    networks:
+      - app_network
+    build:
+      context: ./authservice
+      dockerfile: Dockerfile
+    container_name: authservice
+    volumes:
+      - sqlite_data:/app/data:ro 
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=file:/app/data/database.sqlite
+    restart: always
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    environment:
+      - NODE_ENV=production
+    command: npm run build
+    volumes:
+      - ./frontend/dist:/app/frontend/dist
+
+  vault:
+    image: hashicorp/vault:latest
+    container_name: vault
+    cap_add:
+      - IPC_LOCK
+    environment:
+     - VAULT_ADDR=http://0.0.0.0:8200
+    volumes:
+      - ./vault/config.hcl:/vault/config/config.hcl 
+      - vault_data:/vault/file
+      - ./vault/vault-init.sh:/vault/vault-init.sh
+      - ./vault/vault-start.sh:/vault/vault-start.sh
+    entrypoint: >
+      sh -c "
+        apk add --no-cache bash &&
+        bash /vault/vault-start.sh
+      "
+    restart: always
+    networks:
+      - app_network
+  
+  blockchain:
+    build:
+      context: ./blockchain
+      dockerfile: Dockerfile
+    container_name: blockchain
+    networks:
+      - app_network
+    volumes:
+      - ./blockchain/content:/app/content
+
+
+volumes:
+  sqlite_data:
+  vault_data:
+
+networks:
+  app_network:
+    driver: bridge
+
+
