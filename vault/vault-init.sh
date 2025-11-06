@@ -113,8 +113,5 @@ else
   echo " le moteur KV '$SECRET_PATH' est déjà activé"
 fi
 
-# vault secrets enable -path=secret kv-v2 
-# $VAULT kv put secret/database data.DATABASE_URL="file:/app/data/database.sqlite"
-
 vault secrets list
 
