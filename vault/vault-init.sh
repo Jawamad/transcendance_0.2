@@ -12,9 +12,8 @@ VAULT=${VAULT:-vault}
 export VAULT_ADDR=${VAULT_ADDR:-http://127.0.0.1:8200}
 
 INIT_FILE=/vault/init.txt
-UNSEAL_KEY_FILE=/vault/unseal.key
-ROOT_TOKEN_FILE=/vault/root.token
-ROOT_TOKEN_FILE=/vault/root.tokenttt
+UNSEAL_KEY_FILE=/vault/keys/unseal.key
+ROOT_TOKEN_FILE=/vault/keys/root.token
 
 echo "🚀 Script d’initialisation Vault lancé..."
 
@@ -57,6 +56,16 @@ if [ -z "$IS_INITIALIZED" ]; then
   echo " - Root token : $ROOT_TOKEN_FILE"
 else
   echo "ℹ️ Vault est déjà initialisé."
+fi
+
+SEALED=$($VAULT status -format=json | grep '"sealed": true' || true)
+if [ -n "$SEALED" ]; then
+  echo "🔓 Vault est scellé — tentative d’unseal..."
+  if [ -s "$UNSEAL_KEY_FILE" ]; then
+    $VAULT operator unseal "$(cat $UNSEAL_KEY_FILE)"
+  else
+    echo "❌ Fichier de clé d’unseal introuvable : $UNSEAL_KEY_FILE"
+  fi
 fi
 
 # # ============================
