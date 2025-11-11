@@ -10,8 +10,9 @@ RUN npm install
 # Copier le code source
 COPY . .
 
-# Builder le projet (génère /app/frontend/dist/output.css)
+# Build tailwind
 RUN npm run build
-
+# compile TS to js
+RUN npx tsc
 # Copier le fichier HTML dans le dossier dist
 RUN mkdir -p dist && cp src/index.html dist/index.html
