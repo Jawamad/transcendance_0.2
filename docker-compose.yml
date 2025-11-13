@@ -5,7 +5,8 @@ services:
     image: owasp/modsecurity-crs:nginx-alpine
     container_name: waf
     ports:
-      - "8080:8080"
+      - "8080:80"
+      - "8443:443"
     restart: always
     volumes:
     # fichier reverse-proxy Nginx
@@ -18,7 +19,7 @@ services:
     - ./reverse-proxy/modsecurity.conf:/etc/nginx/modsecurity.conf
 
     # certificats SSL
-    # - ./infra/reverse-proxy/certs:/etc/ssl/certs
+    - ./reverse-proxy/certs:/etc/ssl/certs
     depends_on:
     - frontend
     - api-gateway
