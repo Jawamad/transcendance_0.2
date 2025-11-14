@@ -93,6 +93,7 @@ services:
     volumes:
       - ./vault/config.hcl:/vault/config/config.hcl 
       - vault_data:/vault/file
+      - vault_keys:/vault/keys
       - ./vault/vault-init.sh:/vault/vault-init.sh
       - ./vault/vault-start.sh:/vault/vault-start.sh
     entrypoint: >
@@ -100,7 +101,7 @@ services:
         apk add --no-cache bash &&
         bash /vault/vault-start.sh
       "
-    restart: always
+    #restart: on-failure
     networks:
       - app_network
   
@@ -118,6 +119,7 @@ services:
 volumes:
   sqlite_data:
   vault_data:
+  vault_keys:
   frontend_dist:
 
 networks:
