@@ -12,7 +12,7 @@ services:
     - ./reverse-proxy/custom.conf:/etc/nginx/conf.d/custom.conf
 
      # Dossier frontend buildé
-    - ./frontend/dist:/usr/share/nginx/html
+    - frontend_dist:/usr/share/nginx/html
 
     #fichier de config ModSecurity
     - ./reverse-proxy/modsecurity.conf:/etc/nginx/modsecurity.conf
@@ -20,6 +20,7 @@ services:
     # certificats SSL
     # - ./infra/reverse-proxy/certs:/etc/ssl/certs
     depends_on:
+    - frontend
     - api-gateway
 
   api-gateway:
@@ -73,8 +74,13 @@ services:
     environment:
       - NODE_ENV=production
     command: npm run build
+    # ⚠️ On n’écrase plus le dossier dist avec un volume local !
+    # À la place, on utilise un volume Docker partagé :
     volumes:
-      - ./frontend/dist:/app/frontend/dist
+      - frontend_dist:/app/frontend/dist
+    networks:
+      - app_network
+    restart: "no"  # pas besoin de le relancer en boucle, il build une fois
 
   vault:
     image: hashicorp/vault:latest
@@ -113,6 +119,7 @@ volumes:
   sqlite_data:
   vault_data:
   vault_keys:
+  frontend_dist:
 
 networks:
   app_network:

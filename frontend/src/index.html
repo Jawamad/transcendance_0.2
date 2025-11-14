@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Tailwind</title>
+    <link href="./output.css" rel="stylesheet">
+    <script type="module" src="app.js"></script>
+  </head>
+  <body class="bg-gray-100 flex items-center justify-center h-screen">
+        <div class="flex flex-wrap justify-center gap-6">
+            <div class="w-screen flex justify-between items-center gap-6">
+                
+                <h1 class="relative left-[20px] left top-0">score</h1>
+                <a class="relative" href="#">
+                    <span class="absolute top-0 left-0 mt-1 ml-1 h-full w-full rounded bg-black"></span>
+                    <span class="fold-bold relative inline-block h-full w-full rounded border-2 border-black bg-white px-3 py-1 text-base font-bold text-black transition duration-100 hover:bg-yellow-400 hover:text-gray-900">Pause</span>
+                </a>
+                <a href="#" class="relative">
+                    <span class="absolute top-0 left-0 mt-1 ml-1 h-full w-full rounded bg-gray-700"></span>
+                    <span class="fold-bold relative inline-block h-full w-full rounded border-2 border-black bg-black px-3 py-1 text-base font-bold text-white transition duration-100 hover:bg-gray-900 hover:text-yellow-500">Leave match</span>
+                </a>
+                <h1 class="relative right-[20px] top-0">score</h1>
+            </div>
+            <!-- pong table -->
+            <div class="w-screen h-[600px] flex justify-center items-center bg-black">
+                
+             <div class="w-screen relative h-[600px]">
+                <!-- Ligne centrale -->
+                <div class="absolute left-1/2 top-0 transform -translate-x-1/2 h-full w-[3px] bg-green-500 shadow-[0_0_5px_#0f0,0_0_10px_#0f0,0_0_20px_#0f0]"></div>
+
+                <!-- Ligne gauche -->
+                <div class="absolute left-[20px] top-0 h-[150px] w-[4px] bg-blue-500 shadow-[0_0_5px_#00f,0_0_10px_#00f,0_0_20px_#00f]"></div>
+
+                <!-- Ligne droite -->
+                <div class="absolute right-[20px] top-0 h-[150px] w-[4px] bg-red-500 shadow-[0_0_5px_#f00,0_0_10px_#f00,0_0_20px_#f00]"></div>
+            
+            </div>
+        </div>
+  </body>
+</html>

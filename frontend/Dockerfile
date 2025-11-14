@@ -4,11 +4,15 @@ FROM node:20-alpine AS builder
 WORKDIR /app/frontend
 
 # Copier les fichiers de dépendances
-COPY content/package*.json ./
+COPY package*.json ./
 RUN npm install
 
 # Copier le code source
-COPY content/ ./
+COPY . .
 
-# Builder le projet (génère /app/frontend/dist)
+# Build tailwind
 RUN npm run build
+# compile TS to js
+RUN npx tsc
+# Copier le fichier HTML dans le dossier dist
+RUN mkdir -p dist && cp src/index.html dist/index.html
