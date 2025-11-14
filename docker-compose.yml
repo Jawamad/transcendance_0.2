@@ -11,16 +11,25 @@ services:
     # fichier reverse-proxy Nginx
     - ./reverse-proxy/custom.conf:/etc/nginx/conf.d/custom.conf
 
-     # Dossier frontend buildé
+    # Dossier frontend buildé
     - ./frontend/dist:/usr/share/nginx/html
 
-    #fichier de config ModSecurity
+    # fichier de config ModSecurity
     - ./reverse-proxy/modsecurity.conf:/etc/nginx/modsecurity.conf
 
     # certificats SSL
     # - ./infra/reverse-proxy/certs:/etc/ssl/certs
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://logstash:5000"
+        tag: "waf"
     depends_on:
-    - api-gateway
+      logstash:
+        condition: service_healthy
+      api-gateway:
+        condition: service_started
+
 
   api-gateway:
     build:
@@ -32,10 +41,18 @@ services:
     environment:
       - NODE_ENV=production
       - AUTH_SERVICE_URL=http://authservice:4000
-      - FRONTEND_URL=http://frontend:80
-    depends_on:
-      - authservice
+      - FRONTEND_URL=http://waf:8080
     restart: always
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://logstash:5000"
+        tag: "api-gateway"
+    depends_on:
+      logstash:
+        condition: service_healthy
+      authservice:
+        condition: service_started
 
   dbwriter:
     build:
@@ -133,6 +150,27 @@ services:
     depends_on:
       - elasticsearch
     restart: always
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.15.0
+    container_name: logstash
+    volumes:
+      - ./logstash/pipeline:/usr/share/logstash/pipeline
+    ports:
+      - "5000:5000/tcp"
+      - "5000:5000/udp"
+    environment:
+      - LS_JAVA_OPTS=-Xmx256m -Xms256m
+    networks:
+      - app_network
+    depends_on:
+      - elasticsearch
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9600"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
 
 
