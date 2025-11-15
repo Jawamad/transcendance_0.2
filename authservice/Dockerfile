@@ -40,9 +40,5 @@ EXPOSE 3000
 # Créer le dossier pour la base SQLite (monté en volume)
 RUN mkdir -p /app/data
 
-# Variables d’environnement
-ENV NODE_ENV=production
-ENV DATABASE_URL=file:/app/data/database.sqlite
-
 # Lancer l’application
 CMD ["node", "dist/main.js"]

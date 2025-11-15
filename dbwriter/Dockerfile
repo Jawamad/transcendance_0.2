@@ -33,11 +33,6 @@ COPY --from=builder /app/dist ./dist
 # Créer le dossier de la base SQLite (monté en volume)
 RUN mkdir -p /app/data
 
-# Variables d’environnement par défaut
-ENV NODE_ENV=production
-ENV PORT=4000
-ENV DATABASE_URL=file:/app/data/database.sqlite
-
 EXPOSE 4000
 
 CMD ["node", "dist/index.js"]

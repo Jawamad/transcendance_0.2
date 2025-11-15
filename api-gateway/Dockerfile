@@ -38,8 +38,5 @@ ENV PORT=8080
 # Expose le port de l'API Gateway
 EXPOSE 8080
 
-# Variables d’environnement
-ENV NODE_ENV=production
-
 # Lancer l’application
 CMD ["node", "dist/main.js"]
