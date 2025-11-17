@@ -114,7 +114,8 @@ services:
       - app_network
     volumes:
       - ./blockchain/content:/app/content
-
+      - ./blockchain/content/scripts:/app/content/scripts
+      - ./blockchain/content/contracts:/app/content/contracts
 
 volumes:
   sqlite_data:
