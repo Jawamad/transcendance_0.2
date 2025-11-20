@@ -1,4 +1,23 @@
 services:
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.15.0
+    container_name: logstash
+    networks:
+      app_network:
+       ipv4_address: 172.30.0.10
+    ports:
+      - "5000:5000/udp"   # Port GELF
+    volumes:
+      - ./logstash/pipeline:/usr/share/logstash/pipeline
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9600/_node || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+    depends_on:
+      - elasticsearch
   waf:
     networks:
       - app_network
@@ -22,7 +41,7 @@ services:
     logging:
       driver: gelf
       options:
-        gelf-address: "udp://logstash:5000"
+        gelf-address: "udp://172.30.0.10:5000"
         tag: "waf"
     depends_on:
       logstash:
@@ -46,13 +65,8 @@ services:
     logging:
       driver: gelf
       options:
-        gelf-address: "udp://logstash:5000"
+        gelf-address: "udp://172.30.0.10:5000"
         tag: "api-gateway"
-    depends_on:
-      logstash:
-        condition: service_healthy
-      authservice:
-        condition: service_started
 
   dbwriter:
     build:
@@ -67,6 +81,11 @@ services:
     networks:
       - app_network
     restart: always
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://172.30.0.10:5000"
+        tag: "dbwriter"
 
   authservice:
     networks:
@@ -81,6 +100,11 @@ services:
       - NODE_ENV=production
       - DATABASE_URL=file:/app/data/database.sqlite
     restart: always
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://172.30.0.10:5000"
+        tag: "authservice"
 
   frontend:
     build:
@@ -110,9 +134,14 @@ services:
         apk add --no-cache bash &&
         bash /vault/vault-start.sh
       "
-    restart: always
     networks:
       - app_network
+    restart: always
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://172.30.0.10:5000"
+        tag: "vault"
   
   blockchain:
     build:
@@ -123,6 +152,12 @@ services:
       - app_network
     volumes:
       - ./blockchain/content:/app/content
+    restart: always
+    logging:
+      driver: gelf
+      options:
+        gelf-address: "udp://172.30.0.10:5000"
+        tag: "blockchain"
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
@@ -131,6 +166,7 @@ services:
       - discovery.type=single-node
       - xpack.security.enabled=false  # pour éviter la configuration TLS et user/pass au début
       - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - ELASTIC_PASSWORD=testmdp
     volumes:
       - es_data:/usr/share/elasticsearch/data
     ports:
@@ -151,29 +187,6 @@ services:
       - elasticsearch
     restart: always
 
-  logstash:
-    image: docker.elastic.co/logstash/logstash:8.15.0
-    container_name: logstash
-    volumes:
-      - ./logstash/pipeline:/usr/share/logstash/pipeline
-    ports:
-      - "5000:5000/tcp"
-      - "5000:5000/udp"
-    environment:
-      - LS_JAVA_OPTS=-Xmx256m -Xms256m
-    networks:
-      - app_network
-    depends_on:
-      - elasticsearch
-    restart: always
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9600"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-
-
-
 volumes:
   sqlite_data:
   vault_data:
@@ -182,5 +195,7 @@ volumes:
 networks:
   app_network:
     driver: bridge
-
+    ipam:
+      config:
+        - subnet: 172.30.0.0/16
 
