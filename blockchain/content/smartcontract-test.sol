@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-contract PongScores {
+contract ScoreStorage {
     // Admin du contrat
     address public admin;
 
@@ -18,6 +18,9 @@ contract PongScores {
 
     // Mapping des joueurs vers leurs scores
     mapping(address => PlayerScore[]) private scores;
+
+    // NOUVEAU : mapping pour retrouver l'adresse via le nom
+    mapping(string => address) public usernameToAddress;
 
     // Événements
     event ScoreAdded(address indexed player, string username, uint score, uint timestamp);
@@ -40,10 +43,13 @@ contract PongScores {
 
         scores[msg.sender].push(newScore);
 
+        // NOUVEAU : enregistre le mapping username → address
+        usernameToAddress[username] = msg.sender;
+
         emit ScoreAdded(msg.sender, username, score, block.timestamp);
     }
 
-    // Récupérer tous les scores d'un joueur
+    // Récupérer tous les scores d'un joueur par adresse
     function getScores(address player) external view returns (PlayerScore[] memory) {
         return scores[player];
     }

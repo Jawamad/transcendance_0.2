@@ -16,7 +16,7 @@ services:
     - frontend_dist:/usr/share/nginx/html
 
     #fichier de config ModSecurity
-    - ./reverse-proxy/modsecurity.conf:/etc/nginx/modsecurity.conf
+    - ./reverse-proxy/modsecurity.conf:/etc/modsecurity/modsecurity.conf
 
     # certificats SSL
     - ./reverse-proxy/certs:/etc/ssl/certs
@@ -114,8 +114,6 @@ services:
       - app_network
     volumes:
       - ./blockchain/content:/app/content
-      - ./blockchain/content/scripts:/app/content/scripts
-      - ./blockchain/content/contracts:/app/content/contracts
 
 volumes:
   sqlite_data:
