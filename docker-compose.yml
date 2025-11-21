@@ -14,10 +14,8 @@ services:
 
      # Dossier frontend buildé
     - frontend_dist:/usr/share/nginx/html
-
     #fichier de config ModSecurity
     - ./reverse-proxy/modsecurity.conf:/etc/nginx/modsecurity.conf
-
     # certificats SSL
     - ./reverse-proxy/certs:/etc/ssl/certs
     depends_on:

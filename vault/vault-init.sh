@@ -122,5 +122,19 @@ else
   echo " le moteur KV '$SECRET_PATH' est déjà activé"
 fi
 
-vault secrets list
+# $VAULT kv put secret/test value="hello world"
+
+echo "Vault secret list"
+$VAULT secrets list
+
+$VAULT kv get secret/test
+
+$VAULT kv put secret/waf \
+  dhparam="$(cat /tmp/dhparam-2048.pem)" \
+  selfsigned_key="$(cat /tmp/selfsigned.key)" \
+  selfsigned_cert="$(cat /tmp/selfsigned.crt)"
+
+$VAULT kv get secret/waf 
+
+
 

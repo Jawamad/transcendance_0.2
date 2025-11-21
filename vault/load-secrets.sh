@@ -169,10 +169,20 @@ echo "SECRET_ID=$SECRET_ID"
 # ================
 # 🛡️ WAF
 # ================
+
+docker cp reverse-proxy:/certs/selsigned.key /tmp/selfsigned.key
+docker cp /tmp/selfsigned.key vault:/tmp/selfsigned.key
+
+docker cp reverse-proxy:/certs/dhparam-2048.pem /tmp/dhparam-2048.pem
+docker cp /tmp/dhparam-2048.pem vault:/tmp/dhparam-2048.pem
+
+docker cp reverse-proxy:/certs/selfsigned.crt /tmp/selfsigned.crt
+docker cp /tmp/selfsigned.crt vault:/tmp/selsigned.crt
+
 vault kv put secret/waf \
-  SSL_CERT="PEM_content" \
-  SSL_KEY="PEM_content" \
-  MODSECURITY_SECRET_KEY="secret_modsec_key"
+  dhparam="$(cat /tmp/dhparam-2048.pem)" \
+  selfsigned_key="$(cat /tmp/selfsigned.key)" \
+  selfsigned_cert="$(cat /tmp/selfsigned.crt)"
 
 vault policy write waf /vault/policies/waf.hcl
 

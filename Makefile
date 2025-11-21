@@ -4,6 +4,7 @@ COMPOSE_FILE = docker-compose.yml
 # Start containers
 up:
 	docker compose -f $(COMPOSE_FILE) up -d
+	./secrets.sh
 
 # Build images only
 build:
